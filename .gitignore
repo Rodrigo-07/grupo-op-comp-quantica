@@ -1,0 +1,6 @@
+venv/
+__pycahce__/
+*.pyc
+.DS_Store
+.idea/
+.vscode/
