@@ -22,6 +22,7 @@ class RSABenchmark:
     - gerar chaves RSA pequenas
     - aplicar UMA função de ataque
     - mostrar logs detalhados
+    - gerar relatório final
     """
 
     def __init__(
@@ -190,99 +191,53 @@ class RSABenchmark:
         print("\n🏁 Fim dos ataques (normal ou interrompido)!\n")
         return results
 
+    # ------------------------------
+    #  Relatório final (agora método)
+    # ------------------------------
 
-# ===========================================
-#  ATAQUE COM LOG DE PROGRESSO
-# ===========================================
+    def print_final_report(self, results: List[AttackResult]) -> None:
+        print("\n================ RELATÓRIO FINAL ================\n")
 
-def trial_division_attack(n: int, e: int, progress_interval: int = 1000):
-    limit = math.isqrt(n)
-    steps = 0
+        total = len(results)
+        success_count = sum(1 for r in results if r.success)
+        fail_count = total - success_count
+        success_rate = (success_count / total * 100) if total > 0 else 0.0
 
-    for d in range(2, limit + 1):
-        steps += 1
+        print(f"Total de chaves testadas (inclui interrompidas): {total}")
+        print(f"Quebradas com sucesso                          : {success_count}")
+        print(f"Falharam / não quebradas                       : {fail_count}")
+        print(f"Taxa de sucesso                                : {success_rate:.2f}%\n")
 
-        # Log periódico
-        if steps % progress_interval == 0:
-            percent = (d / limit) * 100
-            print(f"   [Progresso] {percent:.6f}% ({d}/{limit}) testados...")
+        # Agrupar por tamanho de chave
+        stats: Dict[int, List[AttackResult]] = {}
+        for r in results:
+            stats.setdefault(r.key_bits, []).append(r)
 
-        if n % d == 0:
-            return (d, n // d, {"steps": steps})
+        print("Resumo por tamanho de chave:\n")
+        print(f"{'Bits':4} {'#Total':6} {'#OK':4} {'Sucesso%':9} {'t_med (s)':10} {'steps_med':10}")
+        print("-" * 60)
 
-    return (None, None, {"steps": steps})
+        for bits, group in sorted(stats.items()):
+            total_b = len(group)
+            ok_b = sum(1 for r in group if r.success)
+            rate_b = (ok_b / total_b * 100) if total_b > 0 else 0.0
+            avg_time = sum(r.elapsed_seconds for r in group) / total_b if total_b > 0 else 0.0
 
+            steps_list = []
+            for r in group:
+                steps = r.extra.get("steps")
+                if isinstance(steps, (int, float)):
+                    steps_list.append(steps)
+            avg_steps = sum(steps_list) / len(steps_list) if steps_list else 0.0
 
-# ----------------------------
-# Função de relatório final
-# ----------------------------
+            print(
+                f"{bits:4} "
+                f"{total_b:6} "
+                f"{ok_b:4} "
+                f"{rate_b:9.2f} "
+                f"{avg_time:10.6f} "
+                f"{avg_steps:10.2f}"
+            )
 
-def print_final_report(results: List[AttackResult]):
-    print("\n================ RELATÓRIO FINAL ================\n")
+        print("\n=================================================\n")
 
-    total = len(results)
-    success_count = sum(1 for r in results if r.success)
-    fail_count = total - success_count
-    success_rate = (success_count / total * 100) if total > 0 else 0.0
-
-    print(f"Total de chaves testadas (inclui interrompidas): {total}")
-    print(f"Quebradas com sucesso                          : {success_count}")
-    print(f"Falharam / não quebradas                       : {fail_count}")
-    print(f"Taxa de sucesso                                : {success_rate:.2f}%\n")
-
-    # Agrupar por tamanho de chave
-    stats: Dict[int, List[AttackResult]] = {}
-    for r in results:
-        stats.setdefault(r.key_bits, []).append(r)
-
-    print("Resumo por tamanho de chave:\n")
-    print(f"{'Bits':4} {'#Total':6} {'#OK':4} {'Sucesso%':9} {'t_med (s)':10} {'steps_med':10}")
-    print("-" * 60)
-
-    for bits, group in sorted(stats.items()):
-        total_b = len(group)
-        ok_b = sum(1 for r in group if r.success)
-        rate_b = (ok_b / total_b * 100) if total_b > 0 else 0.0
-        avg_time = sum(r.elapsed_seconds for r in group) / total_b if total_b > 0 else 0.0
-
-        steps_list = []
-        for r in group:
-            steps = r.extra.get("steps")
-            if isinstance(steps, (int, float)):
-                steps_list.append(steps)
-        avg_steps = sum(steps_list) / len(steps_list) if steps_list else 0.0
-
-        print(
-            f"{bits:4} "
-            f"{total_b:6} "
-            f"{ok_b:4} "
-            f"{rate_b:9.2f} "
-            f"{avg_time:10.6f} "
-            f"{avg_steps:10.2f}"
-        )
-
-    print("\n=================================================\n")
-
-
-# ============================
-# Exemplo de uso
-# ============================
-if __name__ == "__main__":
-    bench = RSABenchmark(
-        key_sizes_bits=(16, 20, 24, 28, 2048),
-        seed=42,
-    )
-
-    results = bench.run(trial_division_attack, progress_interval=10_000_000)
-
-    print(f"{'Bits':4} {'Sucesso':8} {'Tempo (s)':10} Extra")
-    print("-" * 60)
-    for r in results:
-        print(
-            f"{r.key_bits:4} "
-            f"{str(r.success):8} "
-            f"{r.elapsed_seconds:10.6f} "
-            f"{r.extra}"
-        )
-
-    print_final_report(results)
