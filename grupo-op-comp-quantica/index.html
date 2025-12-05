@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Demonstração RSA - Grupo Op. Comp. Quântica</title>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --bg: #f8fafc;
+            --card-bg: #ffffff;
+            --text: #1e293b;
+            --muted: #64748b;
+            --border: #e2e8f0;
+            --code-bg: #f1f5f9;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 0;
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 4rem 2rem;
+        }
+
+        header {
+            text-align: left;
+            margin-bottom: 4rem;
+        }
+
+        h1 {
+            color: var(--text);
+            margin: 0 0 0.5rem 0;
+            font-size: 2.25rem;
+            font-weight: 700;
+            letter-spacing: -0.025em;
+        }
+
+        header p {
+            color: var(--muted);
+            font-size: 1.1rem;
+            margin: 0;
+        }
+
+        h2 {
+            color: var(--text);
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-top: 0;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .card {
+            background-color: var(--card-bg);
+            border-radius: 8px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            border: 1px solid var(--border);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+
+        .input-group {
+            margin-bottom: 1.5rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: var(--text);
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+
+        input[type="text"], input[type="number"], textarea {
+            width: 100%;
+            padding: 12px;
+            background-color: #fff;
+            border: 1px solid var(--border);
+            color: var(--text);
+            border-radius: 6px;
+            font-family: inherit;
+            font-size: 1rem;
+            box-sizing: border-box;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        input[type="text"]:focus, input[type="number"]:focus, textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
+        button {
+            background-color: var(--text);
+            color: #fff;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 0.95rem;
+            transition: background-color 0.2s;
+            width: 100%;
+        }
+
+        button:hover {
+            background-color: #000;
+        }
+
+        button:active {
+            transform: translateY(1px);
+        }
+
+        .step-log {
+            background-color: var(--code-bg);
+            padding: 1.5rem;
+            border-radius: 6px;
+            font-family: 'SF Mono', 'Menlo', 'Monaco', 'Courier New', monospace;
+            font-size: 0.85rem;
+            color: var(--text);
+            max-height: 300px;
+            overflow-y: auto;
+            margin-top: 1.5rem;
+            border: 1px solid var(--border);
+        }
+
+        .step-item {
+            margin-bottom: 0.75rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 1px solid var(--border);
+            line-height: 1.5;
+        }
+
+        .step-item:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+
+        .highlight {
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        .math-var {
+            font-style: italic;
+            font-family: serif;
+            color: var(--text);
+            background-color: rgba(0,0,0,0.05);
+            padding: 0 4px;
+            border-radius: 3px;
+        }
+
+        .keys-display {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .key-box {
+            background: var(--code-bg);
+            padding: 1rem;
+            border-radius: 6px;
+            border: 1px solid var(--border);
+            word-break: break-all;
+        }
+
+        .key-title {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--muted);
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+        }
+
+        .key-value {
+            font-family: 'SF Mono', 'Menlo', 'Monaco', 'Courier New', monospace;
+            color: var(--text);
+            font-size: 0.85rem;
+        }
+
+        /* Loading animation */
+        .loader {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 0.8s linear infinite;
+            margin-right: 8px;
+            vertical-align: middle;
+            display: none;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        small {
+            display: block;
+            margin-top: 0.5rem;
+            color: var(--muted);
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>RSA Interativo</h1>
+        <p>Demonstração passo a passo do algoritmo de criptografia RSA</p>
+    </header>
+
+    <!-- GERAÇÃO DE CHAVES -->
+    <section class="card">
+        <h2>1. Geração de Chaves</h2>
+        <p>O primeiro passo é gerar um par de chaves: uma pública (para encriptar) e uma privada (para decriptar).</p>
+        
+        <div class="input-group">
+            <label for="bitLength">Tamanho dos Primos (bits)</label>
+            <input type="number" id="bitLength" value="64" min="8" max="1024">
+            <small style="color: #666;">Recomendado para demo: 64-128 bits. (Python usa ~1024+ para real)</small>
+        </div>
+
+        <button onclick="generateKeys()">
+            <span class="loader" id="genLoader"></span> Gerar Chaves
+        </button>
+
+        <div class="keys-display" id="keysDisplay" style="display:none;">
+            <div class="key-box">
+                <div class="key-title">Chave Pública (e, n)</div>
+                <div class="key-value" id="pubKeyDisplay"></div>
+            </div>
+            <div class="key-box">
+                <div class="key-title">Chave Privada (d, n)</div>
+                <div class="key-value" id="privKeyDisplay"></div>
+            </div>
+        </div>
+
+        <div class="step-log" id="genLog">
+            <div class="step-item">Aguardando geração...</div>
+        </div>
+    </section>
+
+    <!-- ENCRIPTAÇÃO -->
+    <section class="card">
+        <h2>2. Encriptação</h2>
+        <p>Transforme uma mensagem de texto em números ilegíveis usando a <b>Chave Pública</b>.</p>
+        
+        <div class="input-group">
+            <label for="msgInput">Mensagem de Texto</label>
+            <input type="text" id="msgInput" placeholder="Digite sua mensagem secreta...">
+        </div>
+
+        <button onclick="encryptMessage()">🔒 Encriptar</button>
+
+        <div class="step-log" id="encLog">
+            <div class="step-item">Aguardando mensagem...</div>
+        </div>
+
+        <div class="input-group" style="margin-top: 1rem;">
+            <label>Resultado (Cifrado):</label>
+            <textarea id="cipherOutput" rows="3" readonly></textarea>
+        </div>
+    </section>
+
+    <!-- DECRIPTAÇÃO -->
+    <section class="card">
+        <h2>3. Decriptação</h2>
+        <p>Recupere a mensagem original usando a <b>Chave Privada</b>.</p>
+        
+        <div class="input-group">
+            <label for="cipherInput">Mensagem Cifrada (Número)</label>
+            <textarea id="cipherInput" rows="3" placeholder="Cole o número cifrado aqui..."></textarea>
+        </div>
+
+        <button onclick="decryptMessage()">🔓 Decriptar</button>
+
+        <div class="step-log" id="decLog">
+            <div class="step-item">Aguardando input cifrado...</div>
+        </div>
+
+        <div class="input-group" style="margin-top: 1rem;">
+            <label>Resultado (Texto Original):</label>
+            <input type="text" id="plainOutput" readonly>
+        </div>
+    </section>
+</div>
+
+<script>
+    // --- VARIÁVEIS GLOBAIS ---
+    let keys = {
+        e: null,
+        d: null,
+        n: null
+    };
+
+    // --- FUNÇÕES MATEMÁTICAS (BigInt) ---
+
+    // Exponenciação Modular: (base^exp) % mod
+    function modPow(base, exp, mod) {
+        let result = 1n;
+        base = base % mod;
+        while (exp > 0n) {
+            if (exp % 2n === 1n) result = (result * base) % mod;
+            exp = exp / 2n;
+            base = (base * base) % mod;
+        }
+        return result;
+    }
+
+    // Teste de Primalidade Miller-Rabin
+    function isPrime(n, k = 20) {
+        if (n <= 1n) return false;
+        if (n <= 3n) return true;
+        if (n % 2n === 0n) return false;
+
+        // Escrever n-1 como 2^r * d
+        let r = 0n;
+        let d = n - 1n;
+        while (d % 2n === 0n) {
+            r += 1n;
+            d /= 2n;
+        }
+
+        for (let i = 0; i < k; i++) {
+            // Escolher base aleatória a no intervalo [2, n-2]
+            // Como Math.random não suporta BigInt range direto facilmente, vamos simplificar para demo
+            // Usando bases pequenas fixas + algumas aleatórias pequenas funciona bem para números não astronômicos
+            const a = 2n + BigInt(Math.floor(Math.random() * 1000)) % (n - 3n);
+            
+            let x = modPow(a, d, n);
+            if (x === 1n || x === n - 1n) continue;
+
+            let continueLoop = false;
+            for (let j = 0n; j < r - 1n; j++) {
+                x = modPow(x, 2n, n);
+                if (x === n - 1n) {
+                    continueLoop = true;
+                    break;
+                }
+            }
+            if (continueLoop) continue;
+            return false;
+        }
+        return true;
+    }
+
+    // Gerar número aleatório de N bits
+    function generateRandomBigInt(bits) {
+        let hex = '1'; // Garantir MSB 1
+        for(let i=1; i<bits/4; i++) {
+            hex += Math.floor(Math.random() * 16).toString(16);
+        }
+        return BigInt('0x' + hex);
+    }
+
+    // Gerar Primo
+    async function generatePrime(bits) {
+        while (true) {
+            let candidate = generateRandomBigInt(bits);
+            if (candidate % 2n === 0n) candidate += 1n;
+            if (isPrime(candidate)) return candidate;
+            // Pequena pausa para não travar a UI
+            if (Math.random() < 0.1) await new Promise(r => setTimeout(r, 0));
+        }
+    }
+
+    // MDC
+    function gcd(a, b) {
+        while (b !== 0n) {
+            let temp = b;
+            b = a % b;
+            a = temp;
+        }
+        return a;
+    }
+
+    // Inverso Modular (Euclides Estendido)
+    function modInverse(e, phi) {
+        let t = 0n, newt = 1n;
+        let r = phi, newr = e;
+
+        while (newr !== 0n) {
+            let quotient = r / newr;
+            [t, newt] = [newt, t - quotient * newt];
+            [r, newr] = [newr, r - quotient * newr];
+        }
+
+        if (r > 1n) throw new Error("e não é invertível");
+        if (t < 0n) t += phi;
+        return t;
+    }
+
+    // Conversão Texto <-> BigInt
+    function textToBigInt(text) {
+        const encoder = new TextEncoder();
+        const bytes = encoder.encode(text);
+        let hex = '0x';
+        for (let b of bytes) hex += b.toString(16).padStart(2, '0');
+        return BigInt(hex);
+    }
+
+    function bigIntToText(bigint) {
+        let hex = bigint.toString(16);
+        if (hex.length % 2) hex = '0' + hex;
+        const bytes = new Uint8Array(hex.length / 2);
+        for (let i = 0; i < hex.length; i += 2) {
+            bytes[i / 2] = parseInt(hex.substring(i, i + 2), 16);
+        }
+        const decoder = new TextDecoder();
+        return decoder.decode(bytes);
+    }
+
+    // --- UI LOGIC ---
+
+    function log(elementId, message, clear = false) {
+        const el = document.getElementById(elementId);
+        if (clear) el.innerHTML = '';
+        const div = document.createElement('div');
+        div.className = 'step-item';
+        div.innerHTML = message;
+        el.appendChild(div);
+        el.scrollTop = el.scrollHeight;
+    }
+
+    async function generateKeys() {
+        const bits = parseInt(document.getElementById('bitLength').value);
+        const loader = document.getElementById('genLoader');
+        const keysDisplay = document.getElementById('keysDisplay');
+        
+        loader.style.display = 'inline-block';
+        keysDisplay.style.display = 'none';
+        log('genLog', 'Iniciando geração de chaves...', true);
+
+        // Pequeno delay para renderizar o loader
+        await new Promise(r => setTimeout(r, 100));
+
+        try {
+            log('genLog', `Gerando primo <span class="math-var">p</span> de ${bits} bits...`);
+            const p = await generatePrime(bits);
+            log('genLog', `✅ <span class="math-var">p</span> encontrado: ${p.toString().substring(0, 20)}...`);
+
+            log('genLog', `Gerando primo <span class="math-var">q</span> de ${bits} bits...`);
+            let q = await generatePrime(bits);
+            while (q === p) q = await generatePrime(bits);
+            log('genLog', `✅ <span class="math-var">q</span> encontrado: ${q.toString().substring(0, 20)}...`);
+
+            log('genLog', `Calculando <span class="math-var">n = p * q</span>...`);
+            const n = p * q;
+            log('genLog', `📦 <span class="math-var">n</span> (módulo): ${n.toString().substring(0, 20)}... (${n.toString(2).length} bits)`);
+
+            log('genLog', `Calculando <span class="math-var">phi(n) = (p-1)*(q-1)</span>...`);
+            const phi = (p - 1n) * (q - 1n);
+
+            let e = 65537n;
+            log('genLog', `Escolhendo <span class="math-var">e</span> (expoente público)... Tentando 65537`);
+            
+            // Verificar se e é coprimo de phi, senão buscar outro (raro para 65537, mas possível se phi for múltiplo)
+            if (gcd(e, phi) !== 1n) {
+                e = 3n;
+                while (gcd(e, phi) !== 1n) e += 2n;
+                log('genLog', `⚠️ 65537 inválido. Novo <span class="math-var">e</span> escolhido: ${e}`);
+            }
+
+            log('genLog', `Calculando <span class="math-var">d</span> (inverso multiplicativo de e mod phi)...`);
+            const d = modInverse(e, phi);
+            log('genLog', `🔑 <span class="math-var">d</span> calculado!`);
+
+            keys = { e, d, n };
+
+            document.getElementById('pubKeyDisplay').innerText = `e=${e}\nn=${n.toString().substring(0, 15)}...`;
+            document.getElementById('privKeyDisplay').innerText = `d=${d.toString().substring(0, 15)}...\nn=${n.toString().substring(0, 15)}...`;
+            
+            keysDisplay.style.display = 'grid';
+            log('genLog', `<span class="highlight">🎉 Par de chaves gerado com sucesso!</span>`);
+
+        } catch (err) {
+            log('genLog', `❌ Erro: ${err.message}`);
+            console.error(err);
+        } finally {
+            loader.style.display = 'none';
+        }
+    }
+
+    function encryptMessage() {
+        if (!keys.n) {
+            alert('Por favor, gere as chaves primeiro!');
+            return;
+        }
+
+        const text = document.getElementById('msgInput').value;
+        if (!text) return;
+
+        log('encLog', 'Iniciando encriptação...', true);
+
+        // 1. Texto para Número
+        const m = textToBigInt(text);
+        log('encLog', `1. Convertendo texto para número (<span class="math-var">m</span>):`);
+        log('encLog', `<span class="math-var">m</span> = ${m}`);
+
+        if (m >= keys.n) {
+            log('encLog', `❌ ERRO: A mensagem é muito longa para o tamanho da chave atual (n). Aumente os bits da chave ou diminua a mensagem.`);
+            return;
+        }
+
+        // 2. Cifrar: c = m^e mod n
+        log('encLog', `2. Calculando cifragem: <span class="math-var">c = m^e mod n</span>`);
+        const c = modPow(m, keys.e, keys.n);
+        
+        log('encLog', `✅ Mensagem cifrada (<span class="math-var">c</span>):`);
+        log('encLog', `<span class="highlight">${c.toString().substring(0, 50)}...</span>`);
+
+        document.getElementById('cipherOutput').value = c.toString();
+        
+        // Auto-preencher o campo de decriptação para facilitar
+        document.getElementById('cipherInput').value = c.toString();
+    }
+
+    function decryptMessage() {
+        if (!keys.d) {
+            alert('Por favor, gere as chaves primeiro!');
+            return;
+        }
+
+        const cipherStr = document.getElementById('cipherInput').value;
+        if (!cipherStr) return;
+
+        try {
+            const c = BigInt(cipherStr);
+            log('decLog', 'Iniciando decriptação...', true);
+
+            // 1. Decifrar: m = c^d mod n
+            log('decLog', `1. Calculando decifragem: <span class="math-var">m = c^d mod n</span>`);
+            const m = modPow(c, keys.d, keys.n);
+            log('decLog', `<span class="math-var">m</span> recuperado: ${m}`);
+
+            // 2. Número para Texto
+            log('decLog', `2. Convertendo número de volta para texto...`);
+            const text = bigIntToText(m);
+            
+            log('decLog', `✅ Mensagem original: <span class="highlight">${text}</span>`);
+            document.getElementById('plainOutput').value = text;
+
+        } catch (err) {
+            log('decLog', `❌ Erro na decriptação. Verifique se a chave é a correta ou se o texto cifrado é válido.`);
+            console.error(err);
+        }
+    }
+
+</script>
+
+</body>
+</html>

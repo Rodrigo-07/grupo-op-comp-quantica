@@ -1,17 +1,17 @@
 from text_converter import texto_para_numero, numero_para_texto
 
 def encriptar_numero(m: int, e: int, n: int) -> int:
-    m_encripitado = m**e % n
-    
+    # Usa exponenciação modular para eficiência: (m^e) % n
+    m_encripitado = pow(m, e, n)
     return m_encripitado
 
 def decriptar_numero(c: int, d: int, n: int) -> int:
-    m_decripitado = c**d % n
-    
+    # Usa exponenciação modular para eficiência: (c^d) % n
+    m_decripitado = pow(c, d, n)
     return m_decripitado
 
 def encriptar_texto(texto: str, chave_publica: tuple[int, int]) -> list[int]:
-    e, n = chave_publica # e é o expoente, n é o módulo
+    e, n = chave_publica 
     
     numero = texto_para_numero(texto)
     
@@ -21,7 +21,7 @@ def encriptar_texto(texto: str, chave_publica: tuple[int, int]) -> list[int]:
 
 def decriptar_texto(numero_criptografado: int, chave_privada: tuple[int, int]) -> str:
     
-    d, n = chave_privada # d é o expoente, n é o módulo
+    d, n = chave_privada 
     
     numero_decriptado = decriptar_numero(numero_criptografado, d, n)
     

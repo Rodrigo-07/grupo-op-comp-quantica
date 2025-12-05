@@ -7,6 +7,9 @@ def gerar_primo(bits=8):
     
     while True:
         candidato = random.randint(minimo, maximo)
+        if candidato % 2 == 0:
+            candidato += 1
+            
         if eh_primo(candidato):
             return candidato
 
