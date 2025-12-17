@@ -4,6 +4,25 @@ ENV PYTHONUNBUFFERED=1
 
 WORKDIR /app/
 
+# Install system dependencies for liboqs
+RUN apt-get update && \
+    apt-get install -y build-essential git cmake libssl-dev && \
+    rm -rf /var/lib/apt/lists/*
+
+# Build and install liboqs C library
+RUN git clone --depth 1 --branch main https://github.com/open-quantum-safe/liboqs /tmp/liboqs && \
+    cmake -S /tmp/liboqs -B /tmp/liboqs/build \
+        -DBUILD_SHARED_LIBS=ON \
+        -DOQS_ENABLE_SIG_STFL_LMS=ON \
+        -DOQS_ENABLE_SIG_STFL_XMSS=ON \
+        -DOQS_HAZARDOUS_EXPERIMENTAL_ENABLE_SIG_STFL_KEY_SIG_GEN=ON && \
+    cmake --build /tmp/liboqs/build --parallel 4 && \
+    cmake --build /tmp/liboqs/build --target install && \
+    rm -rf /tmp/liboqs
+
+# Set library path for liboqs
+ENV LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib
+
 # Install uv
 # Ref: https://docs.astral.sh/uv/guides/integration/docker/#installing-uv
 COPY --from=ghcr.io/astral-sh/uv:0.5.11 /uv /uvx /bin/
