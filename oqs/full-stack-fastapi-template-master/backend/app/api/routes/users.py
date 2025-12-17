@@ -9,6 +9,7 @@ from app.api.deps import (
     CurrentUser,
     SessionDep,
     get_current_active_superuser,
+    PQCSecuredUser,
 )
 from app.core.config import settings
 from app.core.security import get_password_hash, verify_password
@@ -99,10 +100,23 @@ def update_user_me(
 
 @router.patch("/me/password", response_model=Message)
 def update_password_me(
-    *, session: SessionDep, body: UpdatePassword, current_user: CurrentUser
+    *, 
+    session: SessionDep, 
+    body: UpdatePassword, 
+    current_user: PQCSecuredUser,  # 🔒 PROTEGIDO COM PQC
 ) -> Any:
     """
     Update own password.
+    
+    🔒 SEGURANÇA PQC OBRIGATÓRIA
+    
+    Esta rota exige:
+    1. JWT válido (autenticação tradicional)
+    2. Sessão PQC ativa (header X-PQC-Session)
+    
+    Motivo: Troca de senha é uma operação crítica. A camada PQC
+    garante que não é um token JWT roubado, pois o usuário precisou
+    completar um handshake criptográfico pós-quântico recentemente.
     """
     if not verify_password(body.current_password, current_user.hashed_password):
         raise HTTPException(status_code=400, detail="Incorrect password")
@@ -126,9 +140,21 @@ def read_user_me(current_user: CurrentUser) -> Any:
 
 
 @router.delete("/me", response_model=Message)
-def delete_user_me(session: SessionDep, current_user: CurrentUser) -> Any:
+def delete_user_me(
+    session: SessionDep, 
+    current_user: PQCSecuredUser,  # 🔒 PROTEGIDO COM PQC
+) -> Any:
     """
     Delete own user.
+    
+    🔒 SEGURANÇA PQC OBRIGATÓRIA
+    
+    Esta rota exige:
+    1. JWT válido (autenticação tradicional)
+    2. Sessão PQC ativa (header X-PQC-Session)
+    
+    Motivo: Exclusão de conta é irreversível. A camada PQC adiciona
+    proteção contra ataques sofisticados e futuros computadores quânticos.
     """
     if current_user.is_superuser:
         raise HTTPException(
