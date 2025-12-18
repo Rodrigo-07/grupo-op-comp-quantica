@@ -477,11 +477,11 @@ Todos os exemplos estão em [`examples/`](./pqc-fastapi-implementation/examples/
 
 Este projeto foi desenvolvido por:
 
-- **Ever** - Desenvolvimento e arquitetura
-- **Gabriel Pelinsari** - Implementação backend
-- **Leandro** - Infraestrutura e Docker
-- **Paula** - Pesquisa e documentação
-- **Rodrigo** - Testes e validação
+- **Ever**
+- **Gabriel Pelinsari**
+- **Leandro**
+- **Paula**
+- **Rodrigo**
 
 ### Instituição
 
@@ -540,20 +540,3 @@ Contribuições são bem-vindas! Por favor:
 5. Abra um Pull Request
 
 ---
-
-## 📞 Contato
-
-Para dúvidas ou sugestões:
-
-- **GitHub Issues**: [Op-Quantum-Computing/grupo-op-comp-quantica/issues](https://github.com/Op-Quantum-Computing/grupo-op-comp-quantica/issues)
-- **Email**: grupo-quantum@example.com
-
----
-
-<div align="center">
-
-**Desenvolvido com 💜 pelo Grupo de Computação Quântica**
-
-[⬆ Voltar ao topo](#-implementação-de-criptografia-pós-quântica-pqc-com-open-quantum-safe)
-
-</div>
