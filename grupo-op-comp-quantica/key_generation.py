@@ -25,7 +25,11 @@ def gerar_chaves(tamanho_bits=8):
     
     phi_n = (p - 1) * (q - 1)
     
-    e = 65537
+    e = 3
+    while e < phi_n:
+        if eh_primo(e) and mdc(e, phi_n) == 1:
+            break
+        e += 2
     
     if e >= phi_n or mdc(e, phi_n) != 1:
         e = random.randrange(3, phi_n, 2)
